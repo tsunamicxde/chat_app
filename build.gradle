@@ -1,0 +1,43 @@
+plugins {
+    id 'java-library'
+    id 'scala'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.8'
+}
+
+group 'org.tsunamicxde'
+version '1.0-SNAPSHOT'
+
+javafx {
+    version = "21"
+    modules = ['javafx.controls', 'javafx.fxml']
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        scala {
+            srcDirs = ['src/main/scala', 'src/main/java']
+        }
+        java {
+            srcDirs = []
+        }
+    }
+}
+
+sourceCompatibility = 21
+targetCompatibility = 21
+mainClassName = "Main"
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation group: 'org.scala-lang', name: 'scala-library', version: '2.13.12'
+    implementation group: 'com.typesafe.akka', name: 'akka-actor-typed_2.13', version: '2.6.10'
+    implementation group: 'com.typesafe.akka', name: 'akka-cluster-typed_2.13', version: '2.6.10'
+    implementation group: 'com.typesafe.akka', name: 'akka-serialization-jackson_2.13', version: '2.6.10'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation group: 'com.typesafe.akka', name: 'akka-cluster-tools_2.13', version: '2.6.10'
+}
