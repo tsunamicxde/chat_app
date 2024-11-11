@@ -40,4 +40,7 @@ dependencies {
     implementation group: 'com.typesafe.akka', name: 'akka-serialization-jackson_2.13', version: '2.6.10'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     implementation group: 'com.typesafe.akka', name: 'akka-cluster-tools_2.13', version: '2.6.10'
+    implementation 'com.typesafe.slick:slick_2.13:3.3.3'
+    implementation 'org.postgresql:postgresql:42.6.0'
+    implementation 'com.typesafe.slick:slick-hikaricp_2.13:3.3.3'
 }

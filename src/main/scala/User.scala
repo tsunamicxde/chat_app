@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.{AbstractBehavior, ActorContext, Behaviors}
 import javafx.application.Platform
 import javafx.stage.Stage
 
+import scala.concurrent.ExecutionContext
 
 object User {
 
@@ -13,27 +14,30 @@ object User {
   case class Join(username: String) extends Command with CborSerializable
   case class JoinPrivateChat(username: String) extends Command with CborSerializable
 
-  def apply(): Behavior[Command] =
-    Behaviors.setup{ context =>
-      val user = new User(context)
+  def apply(messageRepository: MessageRepository)(implicit ec: ExecutionContext): Behavior[Command] =
+    Behaviors.setup { context =>
+      val user = new User(context, messageRepository)(ec)
       user
     }
 }
 
-class User(context: ActorContext[Command])
+class User(context: ActorContext[Command], messageRepository: MessageRepository)(implicit ec: ExecutionContext)
   extends AbstractBehavior[User.Command](context) {
 
   var chat: ActorRef[Chat.Command] = context.spawn(Chat(name = ""), "chat")
   val userListener: ActorRef[UserListener.Event] = context.spawn(UserListener(name = ""), "userListener")
 
-
   override def onMessage(msg: Command): Behavior[Command] = {
     msg match {
       case Message(msg, name) =>
         chat ! Chat.BroadcastMessage(msg, name)
+        messageRepository.saveChatMessage(ChatMessage(message = msg, username = name, seedPort1 = Main.seedPort1, seedPort2 = Main.seedPort2))
         Behaviors.same
 
       case PrivateMessage(msg, userNamePrivateChat, outMessageName) =>
+        if (userNamePrivateChat != outMessageName) {
+          messageRepository.savePrivateMessage(DirectMessage(message = msg, sender = outMessageName, recipient = userNamePrivateChat))
+        }
         Platform.runLater(new Runnable {
           override def run(): Unit = {
             Main.directArea
@@ -52,7 +56,7 @@ class User(context: ActorContext[Command])
       case JoinPrivateChat(username) =>
         Platform.runLater(new Runnable {
           override def run(): Unit = {
-            DirectPanel.startPrivateChat(new Stage(), username);
+            DirectPanel.startPrivateChat(new Stage(), username)
           }
         })
         Behaviors.same

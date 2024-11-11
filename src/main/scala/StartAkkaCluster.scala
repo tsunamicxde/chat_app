@@ -3,6 +3,7 @@ import akka.actor.typed.ActorSystem
 import akka.cluster.typed.{Cluster, JoinSeedNodes}
 import com.typesafe.config.{Config, ConfigFactory}
 
+import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters._
 
 object StartAkkaCluster {
@@ -11,7 +12,7 @@ object StartAkkaCluster {
 
   def getSystem: ActorSystem[User.Command] = system
 
-  def startup(ip: String, seedPort1: Int, seedPort2: Int, port: Int): Unit = {
+  def startup(ip: String, seedPort1: Int, seedPort2: Int, port: Int, messageRepository: MessageRepository)(implicit ec: ExecutionContext): Unit = {
     val overrides = Map(
       "akka.remote.artery.canonical.hostname" -> ip,
       "akka.remote.artery.canonical.port" -> port.toString
@@ -20,7 +21,7 @@ object StartAkkaCluster {
     val config: Config = ConfigFactory.parseMap(overrides.asJava)
       .withFallback(ConfigFactory.load())
 
-    system = ActorSystem.create(User(), "ClusterSystem", config)
+    system = ActorSystem.create(User(messageRepository), "ClusterSystem", config)
 
     Main.setSystem(system)
 
