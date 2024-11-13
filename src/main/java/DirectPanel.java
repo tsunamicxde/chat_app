@@ -1,3 +1,4 @@
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -10,6 +11,13 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import scala.collection.immutable.Seq;
+import scala.concurrent.ExecutionContext;
+import scala.concurrent.Future;
+import scala.jdk.javaapi.CollectionConverters;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DirectPanel {
 
@@ -52,5 +60,27 @@ public class DirectPanel {
         primaryStage.setTitle("Direct");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        loadDirectMessages(name, txtAreaDisplay);
+    }
+
+    private static void loadDirectMessages(String recipient, TextArea txtAreaDisplay) {
+        Future<Seq<DirectMessage>> messagesFuture = Main.messageRepository.getDirectMessages();
+
+        messagesFuture.onComplete(result -> {
+            if (result.isSuccess()) {
+                List<DirectMessage> messages = CollectionConverters.asJava(result.get());
+                String filteredMessages = messages.stream()
+                        .filter(msg -> msg.recipient().equals(recipient) || msg.sender().equals(recipient))
+                        .map(msg -> "[Direct]: [" + msg.sender() + "]: " + msg.message())
+                        .collect(Collectors.joining("\n"));
+
+                Platform.runLater(() -> txtAreaDisplay.setText(filteredMessages));
+                Platform.runLater(() -> txtAreaDisplay.appendText("\n"));
+            } else {
+                System.out.println("Failed to load private messages: " + result.failed().get());
+            }
+            return null;
+        }, ExecutionContext.global());
     }
 }

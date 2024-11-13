@@ -11,11 +11,19 @@ import javafx.stage.Stage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
+import javafx.application.Platform;
+import scala.collection.immutable.Seq;
+import scala.concurrent.ExecutionContext;
+import scala.concurrent.Future;
+import scala.jdk.javaapi.CollectionConverters;
+
+import java.util.List;
+
 public class ChatPanel {
 
     static TextArea txtAreaDisplay;
 
-    public static void startChat(Stage primaryStage) {
+    public static void startChat(Stage primaryStage, MessageRepository messageRepository) {
         VBox vBox = new VBox(10);
         vBox.setPadding(new Insets(10, 10, 10, 10));
 
@@ -52,5 +60,24 @@ public class ChatPanel {
         primaryStage.setTitle("Chat");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    static void loadMessages(MessageRepository messageRepository) {
+        Future<Seq<ChatMessage>> messagesFuture = messageRepository.getMessages();
+
+        messagesFuture.onComplete(messages -> {
+            if (messages.isSuccess()) {
+                Platform.runLater(() -> {
+                    List<ChatMessage> chatMessages = CollectionConverters.asJava(messages.get());
+                    for (ChatMessage message : chatMessages) {
+                        txtAreaDisplay.appendText("[" + message.username() + "]: " + message.message() + "\n");
+                    }
+                });
+            } else {
+                Throwable throwable = messages.failed().get();
+                System.err.println("Failed to load messages: " + throwable.getMessage());
+            }
+            return null;
+        }, ExecutionContext.global());
     }
 }

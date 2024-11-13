@@ -15,5 +15,17 @@ class MessageRepository(implicit ec: ExecutionContext) {
   def savePrivateMessage(privateMessage: DirectMessage): Future[Long] =
     db.run(privateMessages returning privateMessages.map(_.id) += privateMessage)
 
+  def getMessages(): Future[Seq[ChatMessage]] = {
+    db.run(
+      chatMessages.result
+    )
+  }
+
+  def getDirectMessages(): Future[Seq[DirectMessage]] = {
+    db.run(
+      privateMessages.result
+    )
+  }
+
   def close(): Future[Unit] = db.shutdown.map(_ => ())
 }

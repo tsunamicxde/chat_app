@@ -31,7 +31,7 @@ class User(context: ActorContext[Command], messageRepository: MessageRepository)
     msg match {
       case Message(msg, name) =>
         chat ! Chat.BroadcastMessage(msg, name)
-        messageRepository.saveChatMessage(ChatMessage(message = msg, username = name, seedPort1 = Main.seedPort1, seedPort2 = Main.seedPort2))
+        messageRepository.saveChatMessage(ChatMessage(message = msg, username = name))
         Behaviors.same
 
       case PrivateMessage(msg, userNamePrivateChat, outMessageName) =>

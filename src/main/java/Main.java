@@ -15,6 +15,7 @@ public class Main extends Application {
     static String userName;
     static int seedPort1;
     static int seedPort2;
+    static MessageRepository messageRepository;
 
     public static void setSystem(ActorSystem<User.Command> system) {
         Main.system = system;
@@ -22,8 +23,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        ChatPanel.startChat(new Stage());
-        AuthPanel.startAuth(new Stage());
+        ChatPanel.startChat(new Stage(), messageRepository);
+        AuthPanel.startAuth(new Stage(), messageRepository);
     }
 
     public static void main(String[] args) {
@@ -41,7 +42,7 @@ public class Main extends Application {
             e.printStackTrace();
         }
 
-        MessageRepository messageRepository = new MessageRepository(ExecutionContext.global());
+        messageRepository = new MessageRepository(ExecutionContext.global());
         StartAkkaCluster.startup(ip, seedPort1, seedPort2, port, messageRepository, ExecutionContext.global());
         launch(args);
     }

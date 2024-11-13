@@ -17,7 +17,7 @@ import javafx.stage.Stage;
 
 public class AuthPanel {
 
-    public static void startAuth(Stage primaryStage) {
+    public static void startAuth(Stage primaryStage, MessageRepository messageRepository) {
         primaryStage.setTitle("Auth");
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
@@ -66,6 +66,7 @@ public class AuthPanel {
                         Main.userName = userName;
                         Main.system.tell(new User.Join(Main.userName));
                         primaryStage.close();
+                        ChatPanel.loadMessages(messageRepository);
                     }
                 } else {
                     actiontarget.setText("Username must not be empty");
